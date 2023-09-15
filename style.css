@@ -1,0 +1,25 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Roboto, 'Noto Sans', 'Segoe UI', 'Open Sans', 'Helvetica Neue',
+    Arial, sans-serif;
+  font-size: 14px;
+  --gray: #d3d6d8;
+  --lightgray: #f8f9fa;
+}
+
+table {
+  white-space: pre;
+  border-collapse: collapse;
+}
+
+table > *:first-child {
+  background-color: var(--lightgray);
+}
+
+th,
+td {
+  padding: 0em 0.2em;
+  border: 1px solid var(--gray);
+}
