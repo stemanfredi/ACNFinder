@@ -13,17 +13,22 @@
     />
   </head>
   <body>
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Search..."
-      onkeyup="searchAndUpdateTable()"
-    />
-    <div id="radioContainer"></div>
-    <table id="resultsTable">
-      <thead></thead>
-      <tbody></tbody>
-    </table>
+    <button id="fetchButton" onclick="fetchData()">
+      &#9654;&nbsp;Fetch data
+    </button>
+    <div id="loadingAnimation" style="display: none"></div>
+    <div id="mainContent" style="display: none">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search..."
+        onkeyup="searchAndUpdateTable()"
+      />
+      <table id="resultsTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <script src="script.js"></script>
   </body>
 </html>

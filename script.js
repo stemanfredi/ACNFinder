@@ -4,6 +4,7 @@ const baseUrl = 'https://catalogocloud.acn.gov.it/json/make_json/'
 const urlEndings = ['IN', 'IA', 'PA', 'SA']
 let jsonData = []
 let fields = []
+let loadingInterval
 
 const searchAndUpdateTable = () => {
   const searchQuery = document.getElementById('searchInput').value.toLowerCase()
@@ -41,24 +42,45 @@ const buildTableHeaders = () => {
   fields.forEach((field, index) => {
     let th = document.createElement('th')
 
-    let radioButton = document.createElement('input')
-    radioButton.type = 'checkbox'
-    radioButton.name = 'searchField'
-    radioButton.value = field
+    let checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    checkbox.name = 'searchField'
+    checkbox.value = field
 
-    // Set the radio button to be selected for the 2nd and 4th fields
-    radioButton.checked = [1, 3].includes(index)
+    // Set the checkbox to be selected for the 2nd and 4th fields
+    checkbox.checked = [1, 3].includes(index)
 
-    radioButton.addEventListener('change', searchAndUpdateTable) // Add an event listener to update the table when the radio button status changes
+    checkbox.addEventListener('change', searchAndUpdateTable)
 
-    th.appendChild(radioButton)
+    th.appendChild(checkbox)
     th.appendChild(document.createTextNode(field))
     row.appendChild(th)
   })
 }
 
-// Define the function to fetch the JSON data using arrow syntax
+// Function to start the loading animation
+const startLoadingAnimation = () => {
+  let dotCount = 0
+  document.getElementById('loadingAnimation').style.display = 'block'
+
+  loadingInterval = setInterval(() => {
+    dotCount = (dotCount + 1) % 4 // Cycle between 0 and 3
+    const dots = '.'.repeat(dotCount)
+    document.getElementById(
+      'loadingAnimation'
+    ).textContent = `Fetching data${dots}`
+  }, 500) // Update every 500 milliseconds
+}
+
+// Function to stop the loading animation
+const stopLoadingAnimation = () => {
+  clearInterval(loadingInterval) // Clear the interval to stop the animation
+  document.getElementById('loadingAnimation').style.display = 'none'
+}
+
 const fetchData = async () => {
+  document.getElementById('fetchButton').style.display = 'none'
+  startLoadingAnimation()
   try {
     for (let i = 0; i < urlEndings.length; i++) {
       let response = await fetch(baseUrl + urlEndings[i])
@@ -71,13 +93,12 @@ const fetchData = async () => {
         buildTableHeaders() // Build table headers based on fields
       }
     }
+    stopLoadingAnimation()
+    document.getElementById('mainContent').style.display = 'block'
     searchAndUpdateTable() // Display all data initially
   } catch (error) {
+    stopLoadingAnimation()
+    document.getElementById('fetchButton').style.display = 'block'
     console.error('Error fetching JSON:', error)
   }
-}
-
-// Invoke the fetchData function when the window loads
-window.onload = () => {
-  fetchData()
 }
