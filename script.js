@@ -60,7 +60,7 @@ const buildTableHeaders = () => {
 
 // Function to start the loading animation
 const startLoadingAnimation = () => {
-  let dotCount = 0
+  let dotCount = -1 // Zero dots
   document.getElementById('loadingAnimation').style.display = 'block'
 
   loadingInterval = setInterval(() => {
