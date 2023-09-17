@@ -1,10 +1,10 @@
 'use strict'
 
+const proxyURL = 'https://corsproxy.io/?'
 const baseUrl = 'https://catalogocloud.acn.gov.it/json/make_json/'
 const urlEndings = ['IN', 'IA', 'PA', 'SA']
 let jsonData = []
 let fields = []
-let loadingInterval
 
 const searchAndUpdateTable = () => {
   const searchQuery = document.getElementById('searchInput').value.toLowerCase()
@@ -58,32 +58,10 @@ const buildTableHeaders = () => {
   })
 }
 
-// Function to start the loading animation
-const startLoadingAnimation = () => {
-  let dotCount = -1 // Zero dots
-  document.getElementById('loadingAnimation').style.display = 'block'
-
-  loadingInterval = setInterval(() => {
-    dotCount = (dotCount + 1) % 4 // Cycle between 0 and 3
-    const dots = '.'.repeat(dotCount)
-    document.getElementById(
-      'loadingAnimation'
-    ).textContent = `Fetching data${dots}`
-  }, 500) // Update every 500 milliseconds
-}
-
-// Function to stop the loading animation
-const stopLoadingAnimation = () => {
-  clearInterval(loadingInterval) // Clear the interval to stop the animation
-  document.getElementById('loadingAnimation').style.display = 'none'
-}
-
 const fetchData = async () => {
-  document.getElementById('fetchButton').style.display = 'none'
-  startLoadingAnimation()
   try {
     for (let i = 0; i < urlEndings.length; i++) {
-      let response = await fetch(baseUrl + urlEndings[i])
+      let response = await fetch(proxyURL + baseUrl + urlEndings[i])
       let data = await response.json()
       jsonData = jsonData.concat(data) // Combine data from all URLs
 
@@ -93,12 +71,12 @@ const fetchData = async () => {
         buildTableHeaders() // Build table headers based on fields
       }
     }
-    stopLoadingAnimation()
-    document.getElementById('mainContent').style.display = 'block'
     searchAndUpdateTable() // Display all data initially
   } catch (error) {
-    stopLoadingAnimation()
-    document.getElementById('fetchButton').style.display = 'block'
     console.error('Error fetching JSON:', error)
   }
+}
+
+window.onload = () => {
+  fetchData()
 }
