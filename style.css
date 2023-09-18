@@ -23,3 +23,13 @@ td {
   padding: 0em 0.2em;
   border: 1px solid var(--gray);
 }
+
+.toggle-icon {
+  cursor: pointer;
+  user-select: none;
+}
+
+.search-box {
+  display: none;
+  position: absolute;
+}
