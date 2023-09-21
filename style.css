@@ -24,7 +24,7 @@ td {
   border: 1px solid var(--gray);
 }
 
-.toggle-icon {
+.icon {
   cursor: pointer;
   user-select: none;
 }

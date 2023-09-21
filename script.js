@@ -8,111 +8,105 @@ const CLEAR_SYMBOL = '❌'
 
 let tableData = []
 let tableFields = []
-const columnSearchTerms = {}
+let searchTerms = {}
 
 const fetchData = async () => {
-  let allData = []
-  for (let ending of URL_ENDINGS) {
-    let response = await fetch(PROXY_URL + BASE_URL + ending)
-    let data = await response.json()
-    allData = allData.concat(data)
-  }
-  return allData
+  const fetchPromises = URL_ENDINGS.map(async ending => {
+    const response = await fetch(PROXY_URL + BASE_URL + ending)
+    return await response.json()
+  })
+
+  const allData = await Promise.all(fetchPromises)
+  return allData.flat()
 }
 
-const filterTableData = () => {
-  return tableData.filter(item => {
-    return tableFields.every(field => {
-      if (columnSearchTerms[field]) {
-        return (
-          item[field] &&
-          item[field].toLowerCase().includes(columnSearchTerms[field])
-        )
-      }
-      return true
-    })
+const filterData = () =>
+  tableData.filter(item =>
+    tableFields.every(
+      f =>
+        !searchTerms[f] ||
+        (item[f] && item[f].toLowerCase().includes(searchTerms[f]))
+    )
+  )
+
+const updateTable = tbody => {
+  tbody.innerHTML = ''
+  filterData().forEach(item => {
+    const row = tbody.insertRow()
+    tableFields.forEach(f => (row.insertCell().textContent = item[f] || ''))
   })
 }
 
-const updateTableDisplay = () => {
-  const tableBody = document
-    .getElementById('resultsTable')
-    .querySelector('tbody')
-  tableBody.innerHTML = ''
-  const filteredData = filterTableData()
+const toggleSearch = (icon, input, field) => {
+  // Hide all other search boxes
+  document.querySelectorAll('.search-box').forEach(box => {
+    if (box !== input) box.style.display = 'none'
+  })
 
-  for (let item of filteredData) {
-    let row = tableBody.insertRow()
-    tableFields.forEach(field => {
-      let cell = row.insertCell()
-      cell.textContent = item[field] || ''
-    })
+  if (input.style.display === 'block' && input.value) {
+    input.value = ''
+    searchTerms[field] = ''
+    updateTable(document.querySelector('#resultsTable tbody'))
+    icon.textContent = SEARCH_SYMBOL
+    input.style.display = 'none' // Hide the current search box
+  } else {
+    input.style.display = input.style.display === 'block' ? 'none' : 'block'
+    input.focus()
   }
 }
 
-const buildTableHeaders = () => {
-  const tableHead = document
-    .getElementById('resultsTable')
-    .querySelector('thead')
-  const headerRow = tableHead.insertRow()
-
+const buildHeaders = () => {
+  const thead = document.querySelector('#resultsTable thead'),
+    row = thead.insertRow()
   tableFields.forEach(field => {
-    let th = document.createElement('th')
-
-    let toggleIcon = document.createElement('span')
-    toggleIcon.textContent = SEARCH_SYMBOL
-    toggleIcon.className = 'toggle-icon'
-    toggleIcon.addEventListener('click', function () {
-      const searchBox = this.nextElementSibling
-      if (searchBox.style.display === 'block' || searchBox.value) {
-        searchBox.value = ''
-        columnSearchTerms[field] = ''
-        updateTableDisplay()
-        this.textContent = SEARCH_SYMBOL
-      } else {
-        searchBox.style.display = 'block'
-        searchBox.focus()
-      }
+    const th = document.createElement('th'),
+      searchIcon = document.createElement('span'),
+      clearIcon = document.createElement('span'),
+      input = document.createElement('input')
+    ;[searchIcon, clearIcon].forEach(icon => {
+      icon.className = 'icon'
+      icon.textContent = icon === searchIcon ? SEARCH_SYMBOL : CLEAR_SYMBOL
     })
-
-    let searchBox = document.createElement('input')
-    searchBox.className = 'search-box'
-    searchBox.addEventListener('input', function () {
-      this.previousElementSibling.textContent = this.value
-        ? CLEAR_SYMBOL
-        : SEARCH_SYMBOL
-      columnSearchTerms[field] = this.value.toLowerCase()
-      updateTableDisplay()
+    clearIcon.style.display = 'none'
+    input.className = 'search-box'
+    input.style.display = 'none'
+    searchIcon.addEventListener('click', () =>
+      toggleSearch(searchIcon, input, field)
+    )
+    clearIcon.addEventListener('click', () => {
+      input.value = ''
+      searchTerms[field] = ''
+      updateTable(document.querySelector('#resultsTable tbody'))
+      clearIcon.style.display = 'none'
     })
-    searchBox.addEventListener('blur', function () {
-      this.style.display = 'none'
+    input.addEventListener('input', () => {
+      clearIcon.style.display = input.value ? 'inline' : 'none'
+      searchTerms[field] = input.value.toLowerCase()
+      updateTable(document.querySelector('#resultsTable tbody'))
     })
-
-    th.appendChild(document.createTextNode(field + ' '))
-    th.appendChild(toggleIcon)
-    th.appendChild(searchBox)
-    headerRow.appendChild(th)
+    th.append(`${field} `, searchIcon, clearIcon, input)
+    row.appendChild(th)
   })
 }
 
-const initializeTable = async () => {
+const init = async () => {
   tableData = await fetchData()
-  if (tableData.length > 0) {
+  if (tableData.length) {
     tableFields = Object.keys(tableData[0])
-    buildTableHeaders()
-    updateTableDisplay()
+    buildHeaders()
+    updateTable(document.querySelector('#resultsTable tbody'))
   }
 }
 
-window.onload = initializeTable
+window.onload = init
 
-document.addEventListener('click', event => {
-  if (
-    !event.target.classList.contains('toggle-icon') &&
-    !event.target.classList.contains('search-box')
-  ) {
-    document.querySelectorAll('.search-box').forEach(box => {
-      box.style.display = 'none'
-    })
+document.addEventListener('click', ({ target }) => {
+  const isIcon = target.className === 'icon'
+  const isSearchBox = target.className === 'search-box'
+
+  if (!isIcon && !isSearchBox) {
+    document
+      .querySelectorAll('.search-box')
+      .forEach(box => (box.style.display = 'none'))
   }
 })
