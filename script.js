@@ -11,9 +11,7 @@ let searchTerms = {}
 
 const fetchData = async () => {
   const fetchPromises = URL_ENDINGS.map(async ending => {
-    const response = await fetch(BASE_URL + ending, {
-      'Access-Control-Allow-Origin': 'null',
-    })
+    const response = await fetch(BASE_URL + ending)
     return await response.json()
   })
 
