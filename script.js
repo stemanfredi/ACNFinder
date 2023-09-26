@@ -1,6 +1,5 @@
 'use strict'
 
-const PROXY_URL = 'https://corsproxy.io/?'
 const BASE_URL = 'https://catalogocloud.acn.gov.it/json/make_json/'
 const URL_ENDINGS = ['IN', 'IA', 'PA', 'SA']
 const SEARCH_SYMBOL = '🔍'
@@ -12,7 +11,9 @@ let searchTerms = {}
 
 const fetchData = async () => {
   const fetchPromises = URL_ENDINGS.map(async ending => {
-    const response = await fetch(PROXY_URL + BASE_URL + ending)
+    const response = await fetch(BASE_URL + ending, {
+      'Access-Control-Allow-Origin': 'https://example.com',
+    })
     return await response.json()
   })
 
