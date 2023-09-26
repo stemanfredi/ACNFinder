@@ -12,7 +12,7 @@ let searchTerms = {}
 const fetchData = async () => {
   const fetchPromises = URL_ENDINGS.map(async ending => {
     const response = await fetch(BASE_URL + ending, {
-      'Access-Control-Allow-Origin': 'https://www.acn.gov.it/',
+      'Access-Control-Allow-Origin': 'null',
     })
     return await response.json()
   })
